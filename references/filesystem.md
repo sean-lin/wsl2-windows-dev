@@ -1,5 +1,7 @@
 ## 2. UNC/9P 路径上的文件与 Win32 行为
 
+> 必须由 Windows 侧执行的文件操作（如 Windows `tar` 解压）优先经 Windows-MCP 的 `PowerShell`；纯 WSL 侧读写 `/mnt` 不在此列。
+
 ### 2.1 Win32 API 差异
 
 | API | 在 UNC/9P 路径上 | 处置 |

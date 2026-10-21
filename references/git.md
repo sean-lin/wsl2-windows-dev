@@ -1,5 +1,7 @@
 ## 6. Git：Windows 盘仓库用 Windows git
 
+> Windows 盘仓库的 git 命令优先经 Windows-MCP 的 `PowerShell` 执行（原生 PATH 与 cwd）；本节讲直调时的坑。
+
 `/mnt/<盘符>` 经 9P 访问 Windows 仓库虽可行，但慢且可能触发索引格式/换行符/文件锁的隐式问题：
 
 - **Windows NTFS 盘上的仓库一律用 Windows 原生 `git.exe`**（`cmd.exe /c "cd /d D:\repo && git.exe ..."`）；禁止 `git -C /mnt/d/...` 操作它们；WSL2 ext4 上的仓库照常用 WSL git；

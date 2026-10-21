@@ -1,5 +1,7 @@
 ## 7. mirrored 网络：端口与进程身份
 
+> 端口 / 进程快照优先经 Windows-MCP 的 `PowerShell` 获取（原生视角）；本节讲跨端网络本身的坑。
+
 ### 7.1 同名端口：WSL2 侧遮蔽 Windows 侧
 
 mirrored 模式下 WSL2 与 Windows 共享 localhost。**两侧都绑 `127.0.0.1:<port>` 时，WSL2 侧的监听遮蔽 Windows 侧**——从 WSL2 连过去命中的是本地的那个，"永远看不到 Windows 侧服务"。典型触发：WSL2 侧某工具自动拉起本地 server。判据与处置：

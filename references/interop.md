@@ -1,5 +1,7 @@
 ## 1. Interop 执行模型
 
+> **优先走 Windows-MCP**（见 [`windows-mcp.md`](windows-mcp.md)）；本节是它不可用时的 WSL 直调回退。
+
 WSL2 通过 `binfmt_misc` 注册 Windows PE 执行器：bash 里运行 `.exe` 由 Windows 侧进程加载器启动，文件系统经 9P 桥接。
 
 ### 1.1 Windows 进程眼中的 WSL2 路径
@@ -27,11 +29,11 @@ cmd.exe 继承 UNC 形式的 CWD 时会打印警告（`CMD.EXE 不支持 UNC 路
 
 **退出码 = 最后一条语句的 `$?`**，与脚本中间是否发生非终止错误无关。`Get-Process -ErrorAction SilentlyContinue` 未命中会把 `$?` 置为 false；若随后的 `if` 没有 `else`，脚本以退出码 1 结束，宿主误报 "PowerShell command failed"。规则：**所有分支都要以成功语句收尾**——查询类补 `else { "" }`，整体以显式 `exit 0` 兜底；真实失败路径靠 `-ErrorAction Stop` 保留非零退出码（用于区分"操作失败"与"预期内未命中"）。
 
-**编码**：WSL2 侧写出的 `.ps1` 默认 UTF-8 无 BOM，而 PowerShell 5.1 对无 BOM 脚本按 ANSI code page（中文系统 = GBK）解析，中文字面量变乱码，**解析期**报 `MissingPropertyName` / `UnexpectedToken`（报错位置常落在被吞掉的引号附近，易误判为逻辑错误）。规避：脚本源码保持**纯 ASCII**，或存为 **UTF-8 with BOM**。
+**编码**：先做 `SKILL.md` 开头的「开工前：一次性系统设置」——自己的机器启用 UTF-8 系统内码（ACP=65001）后，UTF-8 无 BOM 的 `.ps1` 可直接解析，中文输出也正常（2026-10-21 实测）。**未启用 UTF-8 内码时**：WSL2 侧写出的 `.ps1` 默认 UTF-8 无 BOM，而 PowerShell 5.1 对无 BOM 脚本按 ANSI code page（中文系统 = GBK）解析，中文字面量变乱码，**解析期**报 `MissingPropertyName` / `UnexpectedToken`（报错位置常落在被吞掉的引号附近，易误判为逻辑错误）。规避：脚本源码保持**纯 ASCII**，或存为 **UTF-8 with BOM**；给别人的脚本无论本机设置如何都按这条来。
 
 **`.vbs` 同病且无 BOM 解法**（2026-10-03 实测）：WSH 恒按 ANSI 解析 `.vbs`，UTF-8 中文注释的字节被 GBK 误码后**可吞掉行分隔符**——注释吞并下一行代码，报错却是"对象未定义"（如 `缺少对象: 'sh'`，指向看似正常的 `Set sh = ...` 行，极易误判为逻辑错误）。规避：`.vbs` 一律**纯 ASCII**（含注释）。
 
-**用户目录变量**：从 WSL2 调 cmd.exe 时 `%USERPROFILE%` 可能不展开，且中文用户名经 cmd 往返会以 GBK 字节进入 PowerShell、拼出的路径不存在。PowerShell 内统一用 `$env:USERPROFILE`。
+**用户目录变量**：从 WSL2 调 cmd.exe 时 `%USERPROFILE%` 可能不展开；GBK 内码下中文用户名经 cmd 往返会以 GBK 字节进入 PowerShell、拼出的路径不存在（切 UTF-8 系统内码后此现象消失，见 `SKILL.md` 开工前设置）。PowerShell 内统一用 `$env:USERPROFILE`。
 
 ### 1.4 WSLENV 传环境变量；execPath 保留启动路径形式
 

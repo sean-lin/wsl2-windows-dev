@@ -1,5 +1,7 @@
 ## 4. Batch 与 MSBuild 陷阱
 
+> 构建命令优先经 Windows-MCP 的 `PowerShell` 执行（原生 cwd / env / 退出码）；本节问题在两种通道下都可能出现。
+
 ### 4.1 Batch
 
 - **`pushd` UNC 的临时盘符映射随 `popd` 消失**：`pushd \\wsl.localhost\...` 会建 `Z:` 映射，`popd` 后路径失效（后续用它找文件会报找不到）。解析脚本自身相对路径用 `for %%I in ("%~dp0..\..") do set "REPO=%%~fI"`，不要 pushd/popd。

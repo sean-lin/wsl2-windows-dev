@@ -1,5 +1,7 @@
 ## 8. GUI 自动化：WinAppDriver 点击的 z-order 约束
 
+> 桌面级窗口 / 点击 / 置前优先用 Windows-MCP（`App` / `Click`）；被测应用的 UI 自动化仍走 WinAppDriver / Appium / Insight，本节讲其 z-order 约束。
+
 WinAppDriver 的 `click` 是**物理注入**：光标移到元素屏幕坐标后注入按下/抬起，命中由该坐标处 **z-order 最顶**的窗口决定，且**不校验效果**——注入完成即返回 success。目标被其他窗口覆盖时（如测试期间切去浏览器/终端），点击**静默打给覆盖窗口**且仍报 success："点击成功但界面没反应"。非 topmost 弹出窗（自绘控件常见，如窗口关闭按钮）尤其脆弱：只在创建/位置变化时置顶，任何后激活的窗口都会压过它。
 
 **诊断（WindowFromPoint hit-test）**：Windows Python + ctypes，先 `SetProcessDpiAwarenessContext(-4)`（PER_MONITOR_AWARE_V2）对齐物理像素，再对目标坐标做命中测试：

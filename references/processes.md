@@ -57,6 +57,12 @@ GUI 子系统程序（WinMain）默认无控制台。`FreeConsole` + `AttachCons
 
 用途举例：游戏 `-with_console` 输出里的调试日志 / C++ 断言前的最后几行——常能把「疑似上层工具问题」一眼拨正到「native 层问题」（实测案例见 §9）。参考实现：`D:\linux_tmp\console_dump.go`（约百行，无 cgo；首次执行可能有 Defender 云裁定延迟，见 §3.4）。
 
+### 3.6 首选通道：Windows-MCP
+
+Windows 侧的执行 / 进程 / 窗口 / 桌面操作**优先走 Windows-MCP**——安装、登录自启、Qoder 接入、按任务选工具、门控与能力边界见 [`windows-mcp.md`](windows-mcp.md) §10。
+
+本文 §3.1–§3.5 是它不可用时的 WSL 直调回退路径；§3.4 的 Defender 首见拦截即便走 MCP 也仍可能发生（按内容信誉），优先用 Python 脚本而不是新编译 exe。
+
 ## 9. 挂死进程：断言窗、不可杀与 socket 残影（2026-10-10 实证）
 
 **现象**：进程「活着但什么都不响应」——服务不接受连接（服务侧 hello 超时 / 连接被拒）、日志停写、`taskkill /F` 与 `Stop-Process -Force` 杀不动（`taskkill` 报「无法终止……没有此任务的实例在运行」，`Stop-Process` 甚至打印成功但进程仍在）。
